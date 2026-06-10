@@ -1,3 +1,19 @@
+export interface AdmissionEmailSettings {
+  /** Display name in the From field, e.g. "Greenwood Admissions" */
+  senderName: string
+  /** Reply-to / from email shown to parents */
+  senderEmail: string
+  /** Optional custom intro — supports {studentName}, {parentName}, {schoolName}, {academicYear}, {gradeApplying}, {enquiryNumber} */
+  emailIntro: string
+}
+
+export const DEFAULT_ADMISSION_EMAIL_SETTINGS: AdmissionEmailSettings = {
+  senderName: 'Admissions Team',
+  senderEmail: 'admissions@school.edu',
+  emailIntro:
+    'Thank you for your interest in admitting {studentName} to {schoolName} for the academic year {academicYear}. We have successfully received your enquiry (Reference: {enquiryNumber}) and look forward to welcoming your family to our school community.',
+}
+
 export type AcademicYearStatus = 'active' | 'inactive'
 
 export type AdmissionFeatureKey =

@@ -1,6 +1,7 @@
 import { Suspense, type ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router-dom'
 import { AuthLayout } from '@/components/layout/AuthLayout'
+import { PublicApplyLayout } from '@/components/layout/PublicApplyLayout'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { PageLoader } from '@/components/common/PageLoader'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -38,6 +39,14 @@ function withProfile(page: ReactNode) {
   )
 }
 
+function withAdminSetup(page: ReactNode) {
+  return (
+    <Lazy>
+      <RoleGuard allowedRoles={['super_admin', 'school_admin']}>{page}</RoleGuard>
+    </Lazy>
+  )
+}
+
 function withLazy(page: ReactNode) {
   return <Lazy>{page}</Lazy>
 }
@@ -60,6 +69,20 @@ export const routes: RouteObject[] = [
   },
 
   {
+    element: <PublicApplyLayout />,
+    children: [
+      {
+        path: ROUTES.APPLY.EXTERNAL,
+        element: (
+          <Lazy>
+            <Pages.PublicExternalApplicationPage />
+          </Lazy>
+        ),
+      },
+    ],
+  },
+
+  {
     element: <ProtectedRoute />,
     children: [
       {
@@ -69,7 +92,7 @@ export const routes: RouteObject[] = [
 
           // Admissions
           { path: ROUTES.ADMISSIONS.ROOT, element: withModule('admissions', <Pages.AdmissionsOverviewPage />) },
-          { path: ROUTES.ADMISSIONS.SETUP, element: withModule('admissions', <Pages.AdmissionSetupPage />) },
+          { path: ROUTES.ADMISSIONS.SETUP, element: withModule('admissions', withAdminSetup(<Pages.AdmissionSetupPage />)) },
           { path: ROUTES.ADMISSIONS.ENQUIRIES, element: withModule('admissions', <Pages.EnquiriesPage />) },
           { path: ROUTES.ADMISSIONS.PIPELINE, element: withModule('admissions', <Pages.PipelinePage />) },
           { path: ROUTES.ADMISSIONS.FOLLOW_UPS, element: withModule('admissions', <Pages.FollowUpsPage />) },
@@ -95,6 +118,9 @@ export const routes: RouteObject[] = [
 
           // Attendance & Exams
           { path: ROUTES.ATTENDANCE, element: withModule('attendance', <Pages.AttendancePage />) },
+          { path: ROUTES.TIMETABLE, element: withModule('timetable', <Pages.TimetablePage />) },
+          { path: ROUTES.HOMEWORK, element: withModule('homework', <Pages.HomeworkPage />) },
+          { path: ROUTES.ANNOUNCEMENTS, element: withModule('announcements', <Pages.AnnouncementsPage />) },
           { path: ROUTES.EXAMINATIONS, element: withModule('examinations', <Pages.ExamsPage />) },
           { path: '/examinations/schedule', element: <Navigate to={ROUTES.EXAMINATIONS} replace /> },
           { path: '/examinations/results', element: <Navigate to={ROUTES.EXAMINATIONS} replace /> },
@@ -103,11 +129,13 @@ export const routes: RouteObject[] = [
           { path: ROUTES.FEES, element: withModule('fees', <Pages.FeesPage />) },
           { path: '/fees/structure', element: <Navigate to={ROUTES.FEES} replace /> },
           { path: '/fees/payments', element: <Navigate to={ROUTES.FEES} replace /> },
+          { path: ROUTES.TRANSPORT, element: withModule('transport', <Pages.TransportPage />) },
+          { path: ROUTES.LIBRARY, element: withModule('library', <Pages.LibraryPage />) },
           { path: ROUTES.REPORTS, element: withModule('reports', <Pages.ReportsPage />) },
 
           // Legacy redirects
           { path: '/academics', element: <Navigate to={ROUTES.LMS.COURSES} replace /> },
-          { path: '/academics/timetable', element: <Navigate to={ROUTES.ATTENDANCE} replace /> },
+          { path: '/academics/timetable', element: <Navigate to={ROUTES.TIMETABLE} replace /> },
           { path: '/academics/syllabus', element: <Navigate to={ROUTES.LMS.COURSES} replace /> },
           { path: '/lms/resources', element: <Navigate to={ROUTES.LMS.COURSES} replace /> },
           { path: '/students/classes', element: <Navigate to={ROUTES.STUDENTS} replace /> },

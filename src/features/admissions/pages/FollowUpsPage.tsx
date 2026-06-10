@@ -8,14 +8,19 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { AdmissionsPageShell } from '../components/AdmissionsPageShell'
 import { AdmissionFeatureGuard } from '../components/AdmissionFeatureGuard'
 import { FollowUpCard } from '../components/FollowUpCard'
+import { FollowUpFormSheet } from '../components/FollowUpFormSheet'
 import { AdmissionsEmptyState } from '../components/AdmissionsEmptyState'
 import { useAdmissions } from '../hooks/useAdmissions'
+import { useAdmissionSetup } from '../hooks/useAdmissionSetup'
 import { isPast, isToday } from 'date-fns'
 
 export function FollowUpsPage() {
   const admissions = useAdmissions()
+  const { isFeatureEnabled } = useAdmissionSetup()
+  const canSchedule = isFeatureEnabled('followUps')
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('pending')
   const [search, setSearch] = useState('')
+  const [followUpFormOpen, setFollowUpFormOpen] = useState(false)
 
   const filtered = useMemo(() => {
     return admissions.followUps.filter((f) => {
@@ -41,10 +46,12 @@ export function FollowUpsPage() {
       title="Follow-ups"
       description="Track calls, emails, visits, and meetings with prospective families"
       actions={
-        <Button className="gap-1.5">
-          <Plus className="h-4 w-4" />
-          Schedule Follow-up
-        </Button>
+        canSchedule ? (
+          <Button className="gap-1.5" onClick={() => setFollowUpFormOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Schedule Follow-up
+          </Button>
+        ) : undefined
       }
       {...admissions.leadSheetProps}
     >
@@ -140,6 +147,15 @@ export function FollowUpsPage() {
         </Tabs>
       </div>
       </AdmissionFeatureGuard>
+
+      {canSchedule && (
+        <FollowUpFormSheet
+          open={followUpFormOpen}
+          onClose={() => setFollowUpFormOpen(false)}
+          leads={admissions.leads}
+          onSubmit={(values) => admissions.scheduleFollowUp(values)}
+        />
+      )}
     </AdmissionsPageShell>
   )
 }

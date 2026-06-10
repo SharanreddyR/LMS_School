@@ -72,3 +72,25 @@ export const FeesPage = lazy(() =>
 export const ReportsPage = lazy(() =>
   import('@/features/reports/pages/ReportsPage').then((m) => ({ default: m.ReportsPage })),
 )
+
+export const AnnouncementsPage = lazy(() =>
+  import('@/features/announcements/pages/AnnouncementsPage').then((m) => ({ default: m.AnnouncementsPage })),
+)
+export const TimetablePage = lazy(() =>
+  import('@/features/timetable/pages/TimetablePage').then((m) => ({ default: m.TimetablePage })),
+)
+export const TransportPage = lazy(() =>
+  import('@/features/transport/pages/TransportPage').then((m) => ({ default: m.TransportPage })),
+)
+export const LibraryPage = lazy(() =>
+  import('@/features/library/pages/LibraryPage').then((m) => ({ default: m.LibraryPage })),
+)
+export const HomeworkPage = lazy(() =>
+  import('@/features/homework/pages/HomeworkPage').then((m) => ({ default: m.HomeworkPage })),
+)
+
+export const PublicExternalApplicationPage = lazy(() =>
+  import('@/features/admissions/pages/PublicExternalApplicationPage').then((m) => ({
+    default: m.PublicExternalApplicationPage,
+  })),
+)

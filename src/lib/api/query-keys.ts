@@ -24,6 +24,11 @@ export const queryKeys = {
     payments: ['fees', 'payments'] as const,
   },
   reports: { all: ['reports'] as const },
+  announcements: { all: ['announcements'] as const },
+  timetable: { all: ['timetable'] as const },
+  transport: { all: ['transport'] as const },
+  library: { all: ['library'] as const },
+  homework: { all: ['homework'] as const },
   notifications: { all: ['notifications'] as const },
   search: (q: string) => ['search', q] as const,
   admissions: {

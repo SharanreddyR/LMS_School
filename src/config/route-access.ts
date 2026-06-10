@@ -25,8 +25,13 @@ export const ROUTE_MODULE_MAP: Record<string, ModuleId | null> = {
   [ROUTES.LMS.ASSIGNMENTS]: 'lms',
 
   [ROUTES.ATTENDANCE]: 'attendance',
+  [ROUTES.TIMETABLE]: 'timetable',
+  [ROUTES.HOMEWORK]: 'homework',
+  [ROUTES.ANNOUNCEMENTS]: 'announcements',
   [ROUTES.EXAMINATIONS]: 'examinations',
   [ROUTES.FEES]: 'fees',
+  [ROUTES.TRANSPORT]: 'transport',
+  [ROUTES.LIBRARY]: 'library',
   [ROUTES.REPORTS]: 'reports',
 }
 

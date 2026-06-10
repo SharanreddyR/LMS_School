@@ -1,14 +1,22 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { MOCK_ACADEMIC_YEARS } from '../data/setup-mock-data'
-import type { AcademicYear, AcademicYearInput, AdmissionFeatureKey } from '../types/setup'
+import type {
+  AcademicYear,
+  AcademicYearInput,
+  AdmissionEmailSettings,
+  AdmissionFeatureKey,
+} from '../types/setup'
+import { DEFAULT_ADMISSION_EMAIL_SETTINGS } from '../types/setup'
 
 interface AdmissionSetupState {
   academicYears: AcademicYear[]
   selectedYearId: string | null
+  emailSettings: AdmissionEmailSettings
   initialized: boolean
   init: () => void
   setSelectedYearId: (id: string) => void
+  updateEmailSettings: (patch: Partial<AdmissionEmailSettings>) => void
   addAcademicYear: (input: AcademicYearInput) => AcademicYear
   updateAcademicYear: (id: string, input: Partial<AcademicYearInput>) => void
   deleteAcademicYear: (id: string) => void
@@ -36,16 +44,41 @@ export const useAdmissionSetupStore = create<AdmissionSetupState>()(
     (set, get) => ({
       academicYears: [],
       selectedYearId: null,
+      emailSettings: DEFAULT_ADMISSION_EMAIL_SETTINGS,
       initialized: false,
 
       init: () => {
         if (get().initialized) return
+        const state = get()
+        const emailSettings = {
+          ...DEFAULT_ADMISSION_EMAIL_SETTINGS,
+          ...state.emailSettings,
+        }
+        if (state.academicYears.length > 0) {
+          set({
+            initialized: true,
+            emailSettings,
+            selectedYearId:
+              state.selectedYearId ??
+              state.academicYears.find((y) => y.isCurrent)?.id ??
+              state.academicYears[0]?.id ??
+              null,
+          })
+          return
+        }
         const current = MOCK_ACADEMIC_YEARS.find((y) => y.isCurrent) ?? MOCK_ACADEMIC_YEARS[0]
         set({
           academicYears: MOCK_ACADEMIC_YEARS,
           selectedYearId: current?.id ?? null,
+          emailSettings,
           initialized: true,
         })
+      },
+
+      updateEmailSettings: (patch) => {
+        set((state) => ({
+          emailSettings: { ...state.emailSettings, ...patch },
+        }))
       },
 
       setSelectedYearId: (id) => set({ selectedYearId: id }),

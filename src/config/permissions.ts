@@ -12,6 +12,11 @@ export const MODULE_ACCESS: Record<ModuleId, UserRole[]> = {
   examinations: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
   fees: ['super_admin', 'school_admin', 'parent'],
   reports: ['super_admin', 'school_admin', 'teacher'],
+  announcements: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
+  timetable: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
+  transport: ['super_admin', 'school_admin', 'parent'],
+  library: ['super_admin', 'school_admin', 'teacher', 'student'],
+  homework: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
 }
 
 export function canAccessModule(role: UserRole, module: ModuleId): boolean {

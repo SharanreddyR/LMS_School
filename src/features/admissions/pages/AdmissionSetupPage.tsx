@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Settings2 } from 'lucide-react'
+import { Plus, Settings2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -7,6 +7,7 @@ import { AdmissionsSubNav } from '../components/AdmissionsSubNav'
 import { AcademicYearCard } from '../components/AcademicYearCard'
 import { AcademicYearForm } from '../components/AcademicYearForm'
 import { AcademicYearSelector } from '../components/AcademicYearSelector'
+import { AdmissionEmailSettingsCard } from '../components/AdmissionEmailSettingsCard'
 import { useAdmissionSetup } from '../hooks/useAdmissionSetup'
 import { ADMISSION_FEATURE_META, type AcademicYear, type AdmissionFeatureKey } from '../types/setup'
 
@@ -20,6 +21,7 @@ export function AdmissionSetupPage() {
     setCurrentYear,
     toggleFeature,
     currentYear,
+    isYearActive,
   } = useAdmissionSetup()
 
   const [formOpen, setFormOpen] = useState(false)
@@ -61,6 +63,19 @@ export function AdmissionSetupPage() {
         }
       />
       <AdmissionsSubNav />
+
+      {currentYear && !isYearActive && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-medium">Academic year {currentYear.label} is inactive</p>
+            <p className="mt-1 text-amber-800/90">
+              All admission modules are hidden until you activate this year. Toggle status on the
+              year card below or switch to an active year.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
@@ -113,6 +128,8 @@ export function AdmissionSetupPage() {
           </ul>
         </CardContent>
       </Card>
+
+      <AdmissionEmailSettingsCard />
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Academic Years</h2>

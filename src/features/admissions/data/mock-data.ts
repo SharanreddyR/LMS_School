@@ -1,4 +1,5 @@
 import type { AdmissionLead, FollowUp, Activity, Note } from '../types'
+import { enquiryStatusFromStage, migrateLeadSource } from '../types/enquiry'
 
 const now = new Date()
 const daysAgo = (d: number) => new Date(now.getTime() - d * 86400000).toISOString()
@@ -12,7 +13,7 @@ function notes(lead: string, items: Omit<Note, 'id'>[]): Note[] {
   return items.map((n, i) => ({ ...n, id: `${lead}-note-${i}` }))
 }
 
-export const MOCK_LEADS: AdmissionLead[] = [
+const RAW_MOCK_LEADS = [
   {
     id: 'LD-001',
     studentName: 'Aarav Sharma',
@@ -361,6 +362,13 @@ export const MOCK_LEADS: AdmissionLead[] = [
   },
 ]
 
+export const MOCK_LEADS: AdmissionLead[] = RAW_MOCK_LEADS.map((lead, index) => ({
+  ...lead,
+  source: migrateLeadSource(lead.source as string),
+  enquiryNumber: `ENQ-2026-${String(index + 1).padStart(4, '0')}`,
+  enquiryStatus: enquiryStatusFromStage(lead.stage),
+})) as AdmissionLead[]
+
 export const MOCK_FOLLOW_UPS: FollowUp[] = [
   {
     id: 'FU-001',
@@ -461,7 +469,7 @@ export const GRADES = [
   'Grade 11', 'Grade 12',
 ]
 
-export function getDashboardStats(leads: AdmissionLead[]) {
+export function getDashboardStats(leads: AdmissionLead[], followUps: FollowUp[] = MOCK_FOLLOW_UPS) {
   const active = leads.filter((l) => l.stage !== 'lost' && l.stage !== 'enrolled')
   return {
     totalEnquiries: leads.filter((l) => l.stage === 'enquiry').length,
@@ -470,12 +478,12 @@ export function getDashboardStats(leads: AdmissionLead[]) {
     interviews: leads.filter((l) => l.stage === 'interview').length,
     accepted: leads.filter((l) => l.stage === 'accepted').length,
     enrolled: leads.filter((l) => l.stage === 'enrolled').length,
-    conversionRate: Math.round(
-      (leads.filter((l) => l.stage === 'enrolled').length / leads.length) * 100,
-    ),
+    conversionRate: leads.length
+      ? Math.round((leads.filter((l) => l.stage === 'enrolled').length / leads.length) * 100)
+      : 0,
     internalApps: leads.filter((l) => l.applicationType === 'internal').length,
     externalApps: leads.filter((l) => l.applicationType === 'external').length,
-    overdueFollowUps: MOCK_FOLLOW_UPS.filter(
+    overdueFollowUps: followUps.filter(
       (f) => !f.completed && new Date(f.dueDate) < new Date(),
     ).length,
   }

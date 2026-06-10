@@ -47,10 +47,7 @@ export function ApplicationDetailsPanel({ form }: ApplicationDetailsPanelProps) 
       </div>
 
       {APPLICATION_FIELD_GROUPS.map((group) => {
-        if (
-          group.title === 'Correspondence Address' &&
-          form.correspondenceSameAsResidential
-        ) {
+        if (group.title === 'Correspondence Address' && (form.permanentSameAsComm || form.correspondenceSameAsResidential)) {
           return null
         }
 

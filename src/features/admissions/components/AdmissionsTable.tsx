@@ -11,7 +11,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StageBadge } from './StageBadge'
 import { PriorityBadge } from './PriorityBadge'
-import { SOURCE_LABELS, type AdmissionLead } from '../types'
+import { ENQUIRY_SOURCE_LABELS, type AdmissionLead } from '../types'
 
 interface AdmissionsTableProps {
   leads: AdmissionLead[]
@@ -70,7 +70,7 @@ export function AdmissionsTable({ leads, loading, onLeadClick }: AdmissionsTable
               </TableCell>
               <TableCell className="hidden lg:table-cell">{lead.gradeApplying}</TableCell>
               <TableCell className="hidden sm:table-cell text-muted-foreground">
-                {SOURCE_LABELS[lead.source]}
+                {ENQUIRY_SOURCE_LABELS[lead.source]}
               </TableCell>
               <TableCell><StageBadge stage={lead.stage} /></TableCell>
               <TableCell className="hidden md:table-cell">

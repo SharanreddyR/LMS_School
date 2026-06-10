@@ -33,5 +33,13 @@ export const ROUTES = {
   EXAMINATIONS: '/examinations',
   FEES: '/fees',
   REPORTS: '/reports',
+  ANNOUNCEMENTS: '/announcements',
+  TIMETABLE: '/timetable',
+  TRANSPORT: '/transport',
+  LIBRARY: '/library',
+  HOMEWORK: '/homework',
+  APPLY: {
+    EXTERNAL: '/apply/external',
+  },
   SETTINGS: '/settings',
 } as const

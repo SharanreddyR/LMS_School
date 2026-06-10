@@ -18,6 +18,11 @@ interface AdmissionsPageShellProps {
   onSubmitApplication: (leadId: string, form: ApplicationFormData) => void
   onRecordFeePayment: (leadId: string, amount: number, mode: FeePaymentMode) => void
   onConvertToStudent: (leadId: string) => string | null
+  onSendApplicationLink?: (leadId: string) => Promise<{
+    success: boolean
+    email?: import('../lib/application-link-email').ApplicationLinkEmail
+    reason?: string
+  }>
 }
 
 export function AdmissionsPageShell({
@@ -32,6 +37,7 @@ export function AdmissionsPageShell({
   onSubmitApplication,
   onRecordFeePayment,
   onConvertToStudent,
+  onSendApplicationLink,
 }: AdmissionsPageShellProps) {
   return (
     <div className="space-y-6">
@@ -56,6 +62,7 @@ export function AdmissionsPageShell({
         onSubmitApplication={onSubmitApplication}
         onRecordFeePayment={onRecordFeePayment}
         onConvertToStudent={onConvertToStudent}
+        onSendApplicationLink={onSendApplicationLink}
       />
     </div>
   )

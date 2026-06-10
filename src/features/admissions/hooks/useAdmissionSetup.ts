@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useAdmissionSetupStore } from '../stores/admission-setup.store'
-import type { AcademicYear, AdmissionFeatureKey } from '../types/setup'
+import type { AcademicYear, AdmissionEmailSettings, AdmissionFeatureKey } from '../types/setup'
 
 export function useAdmissionSetup() {
   const store = useAdmissionSetupStore()
@@ -36,5 +36,7 @@ export function useAdmissionSetup() {
     isYearActive,
     isFeatureEnabled,
     enabledFeatures,
+    emailSettings: store.emailSettings as AdmissionEmailSettings,
+    updateEmailSettings: store.updateEmailSettings,
   }
 }

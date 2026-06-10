@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { Mail, Phone, User, GraduationCap, Tag, FileText, Wallet, UserCheck } from 'lucide-react'
+import { Mail, Phone, User, GraduationCap, Tag, FileText, Wallet, UserCheck, QrCode, Send } from 'lucide-react'
 import { Sheet } from '@/components/ui/sheet'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Select } from '@/components/ui/select'
@@ -19,9 +19,14 @@ import {
   canRecordFee,
   canConvertToStudent,
 } from './EnquiryProcessSteps'
+import { ExternalApplicationQRPanel } from './ExternalApplicationQRPanel'
+import { ApplicationLinkEmailDialog } from './ApplicationLinkEmailDialog'
+import { useAdmissionSetup } from '../hooks/useAdmissionSetup'
+import type { ApplicationLinkEmail } from '../lib/application-link-email'
 import {
   PIPELINE_STAGES,
-  SOURCE_LABELS,
+  ENQUIRY_STATUS_LABELS,
+  ENQUIRY_SOURCE_LABELS,
   type AdmissionLead,
   type PipelineStage,
 } from '../types'
@@ -36,6 +41,14 @@ interface LeadDetailSheetProps {
   onSubmitApplication: (leadId: string, form: ApplicationFormData) => void
   onRecordFeePayment: (leadId: string, amount: number, mode: FeePaymentMode) => void
   onConvertToStudent: (leadId: string) => string | null
+  onSendApplicationLink?: (leadId: string) => Promise<{
+    success: boolean
+    email?: ApplicationLinkEmail
+    reason?: string
+    error?: string
+    previewUrl?: string
+    provider?: 'smtp' | 'ethereal'
+  }>
 }
 
 export function LeadDetailSheet({
@@ -47,16 +60,68 @@ export function LeadDetailSheet({
   onSubmitApplication,
   onRecordFeePayment,
   onConvertToStudent,
+  onSendApplicationLink,
 }: LeadDetailSheetProps) {
   const [applicationOpen, setApplicationOpen] = useState(false)
   const [feeOpen, setFeeOpen] = useState(false)
   const [convertMessage, setConvertMessage] = useState<string | null>(null)
+  const [emailPreview, setEmailPreview] = useState<ApplicationLinkEmail | null>(null)
+  const [emailMeta, setEmailMeta] = useState<{
+    failed?: boolean
+    errorMessage?: string
+    previewUrl?: string
+    provider?: 'smtp' | 'ethereal'
+  }>({})
+  const [sendingLink, setSendingLink] = useState(false)
+  const { isFeatureEnabled } = useAdmissionSetup()
 
   if (!lead) return null
 
-  const showFillApplication = canFillApplication(lead)
+  const canFillInternal = isFeatureEnabled('internalApplication')
+  const canShareQr =
+    isFeatureEnabled('onlineAdmissionForm') && isFeatureEnabled('externalApplication')
+  const canConvertFeature = isFeatureEnabled('conversion')
+
+  const showFillApplication = canFillApplication(lead) && canFillInternal
+  const showQrPanel = canFillApplication(lead) && canShareQr
   const showRecordFee = canRecordFee(lead)
-  const showConvert = canConvertToStudent(lead)
+  const showConvert = canConvertToStudent(lead) && canConvertFeature
+  const appNotStarted = (lead.applicationStatus ?? 'not_started') === 'not_started'
+  const showSendLink =
+    Boolean(onSendApplicationLink) &&
+    canShareQr &&
+    Boolean(lead.email?.trim()) &&
+    appNotStarted
+
+  const handleSendApplicationLink = async () => {
+    if (!onSendApplicationLink) return
+    setSendingLink(true)
+    try {
+      const result = await onSendApplicationLink(lead.id)
+      if (result.success && result.email) {
+        setEmailPreview(result.email)
+        setEmailMeta({
+          failed: false,
+          previewUrl: result.previewUrl,
+          provider: result.provider,
+        })
+      } else if (result.email) {
+        setEmailPreview(result.email)
+        setEmailMeta({
+          failed: true,
+          errorMessage: result.error,
+        })
+      } else if (result.reason === 'no_email') {
+        alert('Please add a parent email address before sending the application link.')
+      } else if (result.reason === 'online_closed') {
+        alert('Online admission is closed for this academic year. Enable it in Admission Setup.')
+      } else if (result.reason === 'already_submitted') {
+        alert('Application has already been submitted for this enquiry.')
+      }
+    } finally {
+      setSendingLink(false)
+    }
+  }
 
   const handleConvert = () => {
     const studentId = onConvertToStudent(lead.id)
@@ -90,10 +155,43 @@ export function LeadDetailSheet({
             </div>
           </div>
 
-          <EnquiryProcessSteps lead={lead} />
+          <EnquiryProcessSteps
+            lead={lead}
+            onAction={(action) => {
+              if (action === 'fillApplication') setApplicationOpen(true)
+              if (action === 'recordFee') setFeeOpen(true)
+              if (action === 'convert') handleConvert()
+            }}
+          />
 
-          {(showFillApplication || showRecordFee || showConvert) && (
+          {showQrPanel && (
+            <div className="rounded-xl border border-dashed border-brand-300 bg-brand-50/30 p-4">
+              <p className="mb-3 flex items-center gap-2 text-sm font-medium text-brand-800">
+                <QrCode className="h-4 w-4" />
+                Share QR — applicant fills form on phone
+              </p>
+              <ExternalApplicationQRPanel
+                compact
+                academicYear={lead.academicYear}
+                refLeadId={lead.id}
+                leadName={lead.studentName}
+              />
+            </div>
+          )}
+
+          {(showSendLink || showFillApplication || showRecordFee || showConvert) && (
             <div className="flex flex-wrap gap-2">
+              {showSendLink && (
+                <Button
+                  variant="outline"
+                  className="gap-2 border-brand-300 text-brand-800 hover:bg-brand-50"
+                  onClick={handleSendApplicationLink}
+                  disabled={sendingLink}
+                >
+                  <Send className="h-4 w-4" />
+                  {sendingLink ? 'Sending…' : 'Email Application Link'}
+                </Button>
+              )}
               {showFillApplication && (
                 <Button className="gap-2" onClick={() => setApplicationOpen(true)}>
                   <FileText className="h-4 w-4" />
@@ -144,7 +242,11 @@ export function LeadDetailSheet({
             <InfoRow icon={Mail} label="Email" value={lead.email} />
             <InfoRow icon={Phone} label="Phone" value={lead.phone} />
             <InfoRow icon={GraduationCap} label="Grade" value={lead.gradeApplying} />
-            <InfoRow icon={Tag} label="Source" value={SOURCE_LABELS[lead.source]} />
+            <InfoRow icon={Tag} label="Enquiry No." value={lead.enquiryNumber} />
+            <InfoRow icon={Tag} label="Status" value={ENQUIRY_STATUS_LABELS[lead.enquiryStatus]} />
+            <InfoRow icon={Tag} label="Source" value={ENQUIRY_SOURCE_LABELS[lead.source]} />
+            {lead.city && <InfoRow icon={Tag} label="City" value={`${lead.city}, ${lead.state ?? ''}`} />}
+            {lead.currentSchool && <InfoRow icon={GraduationCap} label="Current School" value={lead.currentSchool} />}
             <InfoRow icon={User} label="Assigned" value={lead.assignedTo} />
             {lead.interviewDate && (
               <InfoRow
@@ -206,6 +308,20 @@ export function LeadDetailSheet({
         open={feeOpen}
         onClose={() => setFeeOpen(false)}
         onSubmit={onRecordFeePayment}
+      />
+
+      <ApplicationLinkEmailDialog
+        open={Boolean(emailPreview)}
+        email={emailPreview}
+        autoSent={!emailMeta.failed}
+        failed={emailMeta.failed}
+        errorMessage={emailMeta.errorMessage}
+        previewUrl={emailMeta.previewUrl}
+        provider={emailMeta.provider}
+        onClose={() => {
+          setEmailPreview(null)
+          setEmailMeta({})
+        }}
       />
     </>
   )

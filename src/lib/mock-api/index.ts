@@ -1,7 +1,7 @@
 import { delay } from './delay'
 import { getStudentAvatar } from '@/lib/avatars'
+import { getAllStudents } from './student-registry'
 import {
-  MOCK_STUDENTS,
   MOCK_TEACHERS,
   MOCK_PARENTS,
   MOCK_COURSES,
@@ -16,10 +16,19 @@ import {
   MOCK_DASHBOARD_STATS,
 } from './data'
 import { MOCK_LEADS } from '@/features/admissions/data/mock-data'
+import {
+  MOCK_ANNOUNCEMENTS,
+  MOCK_TIMETABLE,
+  MOCK_TRANSPORT,
+  MOCK_LIBRARY,
+  MOCK_HOMEWORK,
+} from './school-ops'
 import type { SearchResult } from './types'
 
 export * from './types'
 export * from './data'
+export * from './school-ops'
+export { getAllStudents, addStudentFromAdmission } from './student-registry'
 
 export async function fetchDashboardStats() {
   await delay()
@@ -28,19 +37,19 @@ export async function fetchDashboardStats() {
 
 export async function fetchStudents() {
   await delay()
-  return [...MOCK_STUDENTS]
+  return getAllStudents()
 }
 
 export async function fetchStudent(id: string) {
   await delay(200)
-  const s = MOCK_STUDENTS.find((x) => x.id === id)
+  const s = getAllStudents().find((x) => x.id === id)
   if (!s) throw new Error('Student not found')
   return s
 }
 
 export async function fetchStudentProfile(studentId: string) {
   await delay(400)
-  const student = MOCK_STUDENTS.find((x) => x.id === studentId)
+  const student = getAllStudents().find((x) => x.id === studentId)
   if (!student) throw new Error('Student not found')
 
   const { buildStudentProfile } = await import('./student-profile')
@@ -61,7 +70,7 @@ export async function fetchParentProfile(parentId: string) {
   if (!parent) throw new Error('Parent not found')
 
   const childrenDetails = parent.children.map((child) => {
-    const student = MOCK_STUDENTS.find((s) => s.id === child.id)
+    const student = getAllStudents().find((s) => s.id === child.id)
     return {
       ...child,
       avatarUrl: child.avatarUrl ?? student?.avatarUrl ?? getStudentAvatar(child.id),
@@ -130,6 +139,31 @@ export async function fetchNotifications() {
   return [...MOCK_NOTIFICATIONS]
 }
 
+export async function fetchAnnouncements() {
+  await delay()
+  return [...MOCK_ANNOUNCEMENTS]
+}
+
+export async function fetchTimetable() {
+  await delay()
+  return [...MOCK_TIMETABLE]
+}
+
+export async function fetchTransportRoutes() {
+  await delay()
+  return [...MOCK_TRANSPORT]
+}
+
+export async function fetchLibraryBooks() {
+  await delay()
+  return [...MOCK_LIBRARY]
+}
+
+export async function fetchHomework() {
+  await delay()
+  return [...MOCK_HOMEWORK]
+}
+
 export async function globalSearch(query: string): Promise<SearchResult[]> {
   await delay(200)
   const q = query.toLowerCase().trim()
@@ -137,7 +171,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
 
   const results: SearchResult[] = []
 
-  MOCK_STUDENTS.filter((s) => s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)).forEach((s) =>
+  getAllStudents().filter((s) => s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)).forEach((s) =>
     results.push({ id: s.id, type: 'student', title: s.name, subtitle: `${s.grade} · ${s.section}`, href: '/students' }),
   )
   MOCK_TEACHERS.filter((t) => t.name.toLowerCase().includes(q) || t.department.toLowerCase().includes(q)).forEach((t) =>

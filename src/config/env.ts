@@ -25,6 +25,12 @@ export const env = {
 
   /** True in production build */
   isProd: import.meta.env.PROD,
+
+  /**
+   * Public URL for QR codes / mobile access (e.g. http://192.168.1.5:5173).
+   * Set when localhost is not reachable from phones on the same network.
+   */
+  publicAppUrl: (import.meta.env.VITE_PUBLIC_APP_URL as string | undefined)?.replace(/\/$/, '') || '',
 } as const
 
 export type Env = typeof env

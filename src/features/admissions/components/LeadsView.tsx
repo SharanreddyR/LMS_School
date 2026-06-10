@@ -16,6 +16,7 @@ interface LeadsViewProps {
   pageSize: number
   onLeadClick: (lead: AdmissionLead) => void
   onPageChange: (page: number) => void
+  onStageChange?: (leadId: string, stage: PipelineStage) => void
   kanbanStages?: PipelineStage[]
   showPagination?: boolean
   emptyTitle?: string
@@ -32,6 +33,7 @@ export function LeadsView({
   pageSize,
   onLeadClick,
   onPageChange,
+  onStageChange,
   kanbanStages,
   showPagination = true,
   emptyTitle,
@@ -65,6 +67,7 @@ export function LeadsView({
           leads={allFilteredLeads}
           loading={loading}
           onLeadClick={onLeadClick}
+          onStageChange={onStageChange}
           stages={kanbanStages}
         />
       )}

@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAdmissionsStore } from '../stores/admissions.store'
+import { useAdmissionSetupStore } from '../stores/admission-setup.store'
+import { queryKeys } from '@/lib/api/query-keys'
 import type {
   AdmissionFilters,
   AdmissionLead,
@@ -7,6 +10,22 @@ import type {
   ViewMode,
 } from '../types'
 import type { ApplicationFormData, FeePaymentMode } from '../types/application'
+import { dispatchApplicationLinkEmail } from '../services/send-application-link-email'
+import type { ApplicationLinkEmail } from '../lib/application-link-email'
+
+export type SendApplicationLinkEmailResult =
+  | {
+      success: true
+      email: ApplicationLinkEmail
+      provider?: 'smtp' | 'ethereal'
+      previewUrl?: string
+    }
+  | {
+      success: false
+      email?: ApplicationLinkEmail
+      reason?: 'no_email' | 'online_closed' | 'not_found' | 'already_submitted' | 'send_failed'
+      error?: string
+    }
 
 const DEFAULT_FILTERS: AdmissionFilters = {
   search: '',
@@ -58,15 +77,32 @@ function matchesFilters(lead: AdmissionLead, filters: AdmissionFilters): boolean
   return true
 }
 
+function resolveCurrentYearLabel(
+  academicYears: ReturnType<typeof useAdmissionSetupStore.getState>['academicYears'],
+  selectedYearId: string | null,
+): string | null {
+  if (!academicYears.length) return null
+  const year =
+    academicYears.find((y) => y.id === selectedYearId) ??
+    academicYears.find((y) => y.isCurrent) ??
+    academicYears[0]
+  return year?.label ?? null
+}
+
 interface UseAdmissionsOptions {
   initialStageFilter?: PipelineStage | 'all'
   initialApplicationType?: AdmissionFilters['applicationType']
   initialViewMode?: ViewMode
+  /** Hide leads in these pipeline stages (e.g. enrolled + lost on enquiries page) */
+  excludeStages?: PipelineStage[]
 }
 
 export function useAdmissions(options: UseAdmissionsOptions = {}) {
-  const { initialStageFilter, initialApplicationType, initialViewMode = 'table' } = options
+  const { initialStageFilter, initialApplicationType, initialViewMode = 'table', excludeStages } = options
   const store = useAdmissionsStore()
+  const selectedYearId = useAdmissionSetupStore((s) => s.selectedYearId)
+  const academicYears = useAdmissionSetupStore((s) => s.academicYears)
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(!store.initialized)
   const [filters, setFilters] = useState<AdmissionFilters>({
     ...DEFAULT_FILTERS,
@@ -76,6 +112,10 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
   const [page, setPage] = useState(1)
   const [selectedLead, setSelectedLead] = useState<AdmissionLead | null>(null)
+
+  useEffect(() => {
+    useAdmissionSetupStore.getState().init()
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -95,12 +135,31 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
     }
   }, [store])
 
-  const leads = store.leads
-  const followUps = store.followUps
+  const currentYearLabel = useMemo(
+    () => resolveCurrentYearLabel(academicYears, selectedYearId),
+    [academicYears, selectedYearId],
+  )
+
+  const allLeads = store.leads
+  const allFollowUps = store.followUps
+
+  const yearLeads = useMemo(() => {
+    if (!currentYearLabel) return allLeads
+    return allLeads.filter((l) => l.academicYear === currentYearLabel)
+  }, [allLeads, currentYearLabel])
+
+  const yearFollowUps = useMemo(() => {
+    const yearLeadIds = new Set(yearLeads.map((l) => l.id))
+    return allFollowUps.filter((f) => yearLeadIds.has(f.leadId))
+  }, [allFollowUps, yearLeads])
 
   const filteredLeads = useMemo(
-    () => leads.filter((l) => matchesFilters(l, filters)),
-    [leads, filters],
+    () =>
+      yearLeads.filter((l) => {
+        if (excludeStages?.includes(l.stage)) return false
+        return matchesFilters(l, filters)
+      }),
+    [yearLeads, filters, excludeStages],
   )
 
   const paginatedLeads = useMemo(() => {
@@ -168,7 +227,57 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
     (leadId: string) => {
       const studentId = store.convertToStudent(leadId)
       syncSelectedLead(leadId)
+      if (studentId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.students.all })
+      }
       return studentId
+    },
+    [store, syncSelectedLead, queryClient],
+  )
+
+  const addEnquiry = useCallback(
+    (input: Parameters<typeof store.addEnquiry>[0]) => store.addEnquiry(input),
+    [store],
+  )
+
+  const scheduleFollowUp = useCallback(
+    (input: Parameters<typeof store.scheduleFollowUp>[0]) => store.scheduleFollowUp(input),
+    [store],
+  )
+
+  const sendApplicationLinkEmail = useCallback(
+    async (leadId: string): Promise<SendApplicationLinkEmailResult> => {
+      const prepared = store.prepareApplicationLinkEmail(leadId)
+      if (!prepared.success || !prepared.email) {
+        return {
+          success: false,
+          reason: prepared.reason,
+          email: prepared.email,
+        }
+      }
+
+      try {
+        const result = await dispatchApplicationLinkEmail(prepared.email)
+        store.confirmApplicationLinkSent(leadId, prepared.email.to)
+        syncSelectedLead(leadId)
+        return {
+          success: true,
+          email: prepared.email,
+          provider: result.provider,
+          previewUrl: result.previewUrl,
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Email server unavailable. Start it with: npm run dev:all'
+        return {
+          success: false,
+          reason: 'send_failed',
+          error: message,
+          email: prepared.email,
+        }
+      }
     },
     [store, syncSelectedLead],
   )
@@ -178,8 +287,9 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
   }, [])
 
   return {
-    leads,
-    followUps,
+    leads: yearLeads,
+    followUps: yearFollowUps,
+    currentYearLabel,
     loading,
     filters,
     viewMode,
@@ -200,6 +310,9 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
     recordFeePayment,
     toggleFollowUp: store.toggleFollowUp,
     convertToStudent,
+    addEnquiry,
+    scheduleFollowUp,
+    sendApplicationLinkEmail,
     leadSheetProps: {
       selectedLead,
       onCloseLead: () => selectLead(null),
@@ -208,6 +321,7 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
       onSubmitApplication: submitApplication,
       onRecordFeePayment: recordFeePayment,
       onConvertToStudent: convertToStudent,
+      onSendApplicationLink: sendApplicationLinkEmail,
     },
   }
 }

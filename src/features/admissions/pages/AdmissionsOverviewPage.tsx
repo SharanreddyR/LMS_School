@@ -22,7 +22,7 @@ import { useAdmissions } from '../hooks/useAdmissions'
 import { useAdmissionSetup } from '../hooks/useAdmissionSetup'
 import { ROUTES } from '@/config/routes'
 import { ADMISSION_FEATURE_META, type AdmissionFeatureKey } from '../types/setup'
-import { getDashboardStats, MOCK_FOLLOW_UPS } from '../data/mock-data'
+import { getDashboardStats } from '../data/mock-data'
 import { PIPELINE_STAGES } from '../types'
 import type { StatMetric } from '@/types/common'
 
@@ -42,7 +42,7 @@ const QUICK_LINKS: Array<{
 ]
 
 export function AdmissionsOverviewPage() {
-  const { leads, loading } = useAdmissions()
+  const { leads, followUps, loading } = useAdmissions()
   const { currentYear, isYearActive, isFeatureEnabled, enabledFeatures } = useAdmissionSetup()
 
   const visibleQuickLinks = QUICK_LINKS.filter((link) => isFeatureEnabled(link.feature))
@@ -61,7 +61,7 @@ export function AdmissionsOverviewPage() {
     )
   }
 
-  const stats = getDashboardStats(leads)
+  const stats = getDashboardStats(leads, followUps)
   const metrics: StatMetric[] = [
     { id: '1', label: 'New Enquiries', value: stats.totalEnquiries, change: 18, changeLabel: 'this week', trend: 'up' },
     { id: '2', label: 'Active Pipeline', value: stats.activeLeads, change: 5, changeLabel: 'in progress', trend: 'up' },
@@ -74,7 +74,7 @@ export function AdmissionsOverviewPage() {
     value: leads.filter((l) => l.stage === s.id).length,
   }))
 
-  const pendingFollowUps = MOCK_FOLLOW_UPS.filter((f) => !f.completed).slice(0, 5)
+  const pendingFollowUps = followUps.filter((f) => !f.completed).slice(0, 5)
 
   return (
     <div className="space-y-6">

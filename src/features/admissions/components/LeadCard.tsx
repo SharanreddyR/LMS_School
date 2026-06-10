@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Avatar } from '@/components/ui/avatar'
 import { StageBadge } from './StageBadge'
 import { PriorityBadge } from './PriorityBadge'
-import { SOURCE_LABELS, type AdmissionLead } from '../types'
+import { ENQUIRY_SOURCE_LABELS, type AdmissionLead } from '../types'
 import { format } from 'date-fns'
 
 interface LeadCardProps {
@@ -50,7 +50,7 @@ export function LeadCard({ lead, onClick, compact }: LeadCardProps) {
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <StageBadge stage={lead.stage} />
               <span className="rounded-md bg-muted px-2 py-0.5 text-xs">{lead.gradeApplying}</span>
-              <span className="text-xs text-muted-foreground">{SOURCE_LABELS[lead.source]}</span>
+              <span className="text-xs text-muted-foreground">{ENQUIRY_SOURCE_LABELS[lead.source]}</span>
             </div>
 
             {lead.nextFollowUp && !compact && (

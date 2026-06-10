@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { ASSIGNEES, GRADES } from '../data/mock-data'
 import {
   PIPELINE_STAGES,
-  SOURCE_LABELS,
+  ENQUIRY_SOURCE_LABELS,
   PRIORITY_LABELS,
   type AdmissionFilters,
 } from '../types'
@@ -76,7 +76,7 @@ export function AdmissionsFiltersPanel({ filters, onChange, onReset, hideStage }
                 onChange={(e) => onChange({ source: e.target.value as AdmissionFilters['source'] })}
               >
                 <option value="all">All sources</option>
-                {Object.entries(SOURCE_LABELS).map(([k, v]) => (
+                {Object.entries(ENQUIRY_SOURCE_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
               </Select>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { CalendarCheck, GraduationCap, UserPlus, Wallet, BookOpen, FileText } from 'lucide-react'
+import { CalendarCheck, GraduationCap, UserPlus, Wallet, BookOpen, FileText, Megaphone, CalendarDays, Bus, NotebookPen } from 'lucide-react'
+import { ROUTES } from '@/config/routes'
 import { fetchDashboardStats } from '@/lib/mock-api'
 import { queryKeys } from '@/lib/api/query-keys'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -13,12 +14,16 @@ import { Button } from '@/components/ui/button'
 import type { StatMetric } from '@/types/common'
 
 const QUICK_ACTIONS = [
-  { to: '/admissions', label: 'Admissions', icon: UserPlus },
-  { to: '/students', label: 'Students', icon: GraduationCap },
-  { to: '/attendance', label: 'Attendance', icon: CalendarCheck },
-  { to: '/fees', label: 'Fees', icon: Wallet },
-  { to: '/lms/courses', label: 'LMS', icon: BookOpen },
-  { to: '/examinations', label: 'Exams', icon: FileText },
+  { to: ROUTES.ADMISSIONS.ROOT, label: 'Admissions', icon: UserPlus },
+  { to: ROUTES.STUDENTS, label: 'Students', icon: GraduationCap },
+  { to: ROUTES.ATTENDANCE, label: 'Attendance', icon: CalendarCheck },
+  { to: ROUTES.TIMETABLE, label: 'Timetable', icon: CalendarDays },
+  { to: ROUTES.HOMEWORK, label: 'Homework', icon: NotebookPen },
+  { to: ROUTES.ANNOUNCEMENTS, label: 'Announcements', icon: Megaphone },
+  { to: ROUTES.FEES, label: 'Fees', icon: Wallet },
+  { to: ROUTES.TRANSPORT, label: 'Transport', icon: Bus },
+  { to: ROUTES.LMS.COURSES, label: 'LMS', icon: BookOpen },
+  { to: ROUTES.EXAMINATIONS, label: 'Exams', icon: FileText },
 ]
 
 export function SchoolAdminDashboard() {
@@ -68,7 +73,7 @@ export function SchoolAdminDashboard() {
         </div>
         <Card>
           <CardHeader><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
+          <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {QUICK_ACTIONS.map(({ to, label, icon: Icon }) => (
               <Link key={to} to={to} className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm font-medium transition-colors hover:bg-muted">
                 <Icon className="h-4 w-4 text-brand-600" />{label}

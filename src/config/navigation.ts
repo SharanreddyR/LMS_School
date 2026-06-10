@@ -17,6 +17,12 @@ import {
   UserCheck,
   Settings2,
   ClipboardList,
+  Megaphone,
+  CalendarDays,
+  Bus,
+  BookMarked,
+  NotebookPen,
+  MessageSquare,
 } from 'lucide-react'
 import type { NavItem } from '@/types/navigation'
 
@@ -40,12 +46,11 @@ export const NAVIGATION: NavItem[] = [
     label: 'Admissions',
     href: '/admissions',
     icon: UserPlus,
-    badge: '12',
     roles: ['super_admin', 'school_admin', 'admission_team'],
     children: [
       { id: 'adm-overview', label: 'Overview', href: '/admissions', icon: LayoutDashboard, roles: ['super_admin', 'school_admin', 'admission_team'] },
       { id: 'adm-setup', label: 'Setup', href: '/admissions/setup', icon: Settings2, roles: ['super_admin', 'school_admin'] },
-      { id: 'adm-enquiries', label: 'Enquiries', href: '/admissions/enquiries', icon: UserPlus, roles: ['super_admin', 'school_admin', 'admission_team'] },
+      { id: 'adm-enquiries', label: 'Enquiries', href: '/admissions/enquiries', icon: MessageSquare, roles: ['super_admin', 'school_admin', 'admission_team'] },
       { id: 'adm-pipeline', label: 'Pipeline', href: '/admissions/pipeline', icon: GitBranch, roles: ['super_admin', 'school_admin', 'admission_team'] },
       { id: 'adm-followups', label: 'Follow-ups', href: '/admissions/follow-ups', icon: CalendarClock, roles: ['super_admin', 'school_admin', 'admission_team'] },
       { id: 'adm-internal', label: 'Internal Apps', href: '/admissions/applications/internal', icon: FileInput, roles: ['super_admin', 'school_admin', 'admission_team'] },
@@ -93,6 +98,27 @@ export const NAVIGATION: NavItem[] = [
     roles: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
   },
   {
+    id: 'timetable',
+    label: 'Timetable',
+    href: '/timetable',
+    icon: CalendarDays,
+    roles: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
+  },
+  {
+    id: 'homework',
+    label: 'Homework',
+    href: '/homework',
+    icon: NotebookPen,
+    roles: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
+  },
+  {
+    id: 'announcements',
+    label: 'Announcements',
+    href: '/announcements',
+    icon: Megaphone,
+    roles: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'],
+  },
+  {
     id: 'examinations',
     label: 'Exams',
     href: '/examinations',
@@ -105,6 +131,20 @@ export const NAVIGATION: NavItem[] = [
     href: '/fees',
     icon: Wallet,
     roles: ['super_admin', 'school_admin', 'parent'],
+  },
+  {
+    id: 'transport',
+    label: 'Transport',
+    href: '/transport',
+    icon: Bus,
+    roles: ['super_admin', 'school_admin', 'parent'],
+  },
+  {
+    id: 'library',
+    label: 'Library',
+    href: '/library',
+    icon: BookMarked,
+    roles: ['super_admin', 'school_admin', 'teacher', 'student'],
   },
   {
     id: 'reports',

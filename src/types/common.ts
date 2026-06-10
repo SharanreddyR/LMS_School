@@ -27,3 +27,8 @@ export type ModuleId =
   | 'examinations'
   | 'fees'
   | 'reports'
+  | 'announcements'
+  | 'timetable'
+  | 'transport'
+  | 'library'
+  | 'homework'

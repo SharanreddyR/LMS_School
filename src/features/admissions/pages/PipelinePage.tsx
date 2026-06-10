@@ -39,6 +39,7 @@ export function PipelinePage() {
           pageSize={admissions.pageSize}
           onLeadClick={admissions.setSelectedLead}
           onPageChange={admissions.setPage}
+          onStageChange={admissions.updateLeadStage}
           kanbanStages={['enquiry', 'contacted', 'qualified', 'application', 'interview', 'accepted', 'enrolled']}
           emptyTitle="Pipeline is empty"
           emptyDescription="No leads in the pipeline. Add enquiries to start building your funnel."

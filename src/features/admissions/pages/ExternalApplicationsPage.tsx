@@ -5,11 +5,16 @@ import { AdmissionFeatureGuard } from '../components/AdmissionFeatureGuard'
 import { AdmissionsToolbar } from '../components/AdmissionsToolbar'
 import { AdmissionsFiltersPanel } from '../components/AdmissionsFilters'
 import { LeadsView } from '../components/LeadsView'
+import { ExternalApplicationQRPanel } from '../components/ExternalApplicationQRPanel'
 import { useAdmissions } from '../hooks/useAdmissions'
+import { useAdmissionSetup } from '../hooks/useAdmissionSetup'
 import { useMemo } from 'react'
 
 export function ExternalApplicationsPage() {
   const admissions = useAdmissions({ initialApplicationType: 'external' })
+  const { currentYear, isFeatureEnabled } = useAdmissionSetup()
+  const showQrPanel =
+    isFeatureEnabled('onlineAdmissionForm') && isFeatureEnabled('externalApplication')
 
   const externalLeads = useMemo(
     () => admissions.filteredLeads.filter((l) => l.applicationType === 'external'),
@@ -37,6 +42,10 @@ export function ExternalApplicationsPage() {
     >
       <AdmissionFeatureGuard feature="externalApplication">
       <div className="space-y-4">
+        {showQrPanel && (
+          <ExternalApplicationQRPanel academicYear={currentYear?.label ?? '2026-27'} />
+        )}
+
         <AdmissionsToolbar
           search={admissions.filters.search}
           onSearchChange={(v) => admissions.updateFilters({ search: v })}
@@ -62,7 +71,7 @@ export function ExternalApplicationsPage() {
           onLeadClick={admissions.setSelectedLead}
           onPageChange={admissions.setPage}
           emptyTitle="No external applications"
-          emptyDescription="Transfer and external student applications will appear here once submitted."
+          emptyDescription="Share the QR code above so transfer students can submit applications from their phone."
         />
       </div>
       </AdmissionFeatureGuard>
