@@ -9,6 +9,7 @@ export const ROUTE_MODULE_MAP: Record<string, ModuleId | null> = {
   [ROUTES.PROFILE]: null,
 
   [ROUTES.ADMISSIONS.ROOT]: 'admissions',
+  [ROUTES.ADMISSIONS.SETUP]: 'admissions',
   [ROUTES.ADMISSIONS.ENQUIRIES]: 'admissions',
   [ROUTES.ADMISSIONS.PIPELINE]: 'admissions',
   [ROUTES.ADMISSIONS.FOLLOW_UPS]: 'admissions',

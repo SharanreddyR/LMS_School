@@ -18,6 +18,9 @@ export const NotFoundPage = lazy(() =>
 export const AdmissionsOverviewPage = lazy(() =>
   import('@/features/admissions/pages/AdmissionsOverviewPage').then((m) => ({ default: m.AdmissionsOverviewPage })),
 )
+export const AdmissionSetupPage = lazy(() =>
+  import('@/features/admissions/pages/AdmissionSetupPage').then((m) => ({ default: m.AdmissionSetupPage })),
+)
 export const EnquiriesPage = lazy(() =>
   import('@/features/admissions/pages/EnquiriesPage').then((m) => ({ default: m.EnquiriesPage })),
 )

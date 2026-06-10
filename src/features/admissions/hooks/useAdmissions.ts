@@ -6,6 +6,7 @@ import type {
   PipelineStage,
   ViewMode,
 } from '../types'
+import type { ApplicationFormData, FeePaymentMode } from '../types/application'
 
 const DEFAULT_FILTERS: AdmissionFilters = {
   search: '',
@@ -123,28 +124,53 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
     setPage(1)
   }, [initialStageFilter, initialApplicationType])
 
+  const syncSelectedLead = useCallback((leadId: string) => {
+    setSelectedLead((prev) => {
+      if (!prev || prev.id !== leadId) return prev
+      const updated = useAdmissionsStore.getState().leads.find((l) => l.id === leadId)
+      return updated ?? prev
+    })
+  }, [])
+
   const updateLeadStage = useCallback(
     (leadId: string, stage: PipelineStage) => {
       store.updateLeadStage(leadId, stage)
-      setSelectedLead((prev) => {
-        if (!prev || prev.id !== leadId) return prev
-        const updated = useAdmissionsStore.getState().leads.find((l) => l.id === leadId)
-        return updated ?? prev
-      })
+      syncSelectedLead(leadId)
     },
-    [store],
+    [store, syncSelectedLead],
   )
 
   const addNote = useCallback(
     (leadId: string, content: string) => {
       store.addNote(leadId, content)
-      setSelectedLead((prev) => {
-        if (!prev || prev.id !== leadId) return prev
-        const updated = useAdmissionsStore.getState().leads.find((l) => l.id === leadId)
-        return updated ?? prev
-      })
+      syncSelectedLead(leadId)
     },
-    [store],
+    [store, syncSelectedLead],
+  )
+
+  const submitApplication = useCallback(
+    (leadId: string, form: ApplicationFormData) => {
+      store.submitApplication(leadId, form)
+      syncSelectedLead(leadId)
+    },
+    [store, syncSelectedLead],
+  )
+
+  const recordFeePayment = useCallback(
+    (leadId: string, amount: number, mode: FeePaymentMode) => {
+      store.recordFeePayment(leadId, amount, mode)
+      syncSelectedLead(leadId)
+    },
+    [store, syncSelectedLead],
+  )
+
+  const convertToStudent = useCallback(
+    (leadId: string) => {
+      const studentId = store.convertToStudent(leadId)
+      syncSelectedLead(leadId)
+      return studentId
+    },
+    [store, syncSelectedLead],
   )
 
   const selectLead = useCallback((lead: AdmissionLead | null) => {
@@ -170,7 +196,18 @@ export function useAdmissions(options: UseAdmissionsOptions = {}) {
     resetFilters,
     updateLeadStage,
     addNote,
+    submitApplication,
+    recordFeePayment,
     toggleFollowUp: store.toggleFollowUp,
-    convertToStudent: store.convertToStudent,
+    convertToStudent,
+    leadSheetProps: {
+      selectedLead,
+      onCloseLead: () => selectLead(null),
+      onStageChange: updateLeadStage,
+      onAddNote: addNote,
+      onSubmitApplication: submitApplication,
+      onRecordFeePayment: recordFeePayment,
+      onConvertToStudent: convertToStudent,
+    },
   }
 }

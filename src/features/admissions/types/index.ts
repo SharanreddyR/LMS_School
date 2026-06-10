@@ -45,6 +45,29 @@ export interface FollowUp {
   type: 'call' | 'email' | 'visit' | 'meeting'
 }
 
+import type { ApplicationFormData, ApplicationStatus, FeeRecord } from './application'
+
+export type {
+  ApplicationFormData,
+  ApplicationStatus,
+  FeeRecord,
+  FeeStatus,
+  FeePaymentMode,
+} from './application'
+export {
+  canFillApplication,
+  canRecordFee,
+  canConvertToStudent,
+  APPLICATION_STATUS_LABELS,
+  FEE_STATUS_LABELS,
+  DEFAULT_ADMISSION_FEE,
+  INSTALLMENT_MINIMUM,
+  getDefaultFeeForGrade,
+  createApplicationFormFromLead,
+  finalizeApplicationForm,
+  APPLICATION_FIELD_GROUPS,
+} from './application'
+
 export interface AdmissionLead {
   id: string
   studentName: string
@@ -56,6 +79,9 @@ export interface AdmissionLead {
   source: LeadSource
   stage: PipelineStage
   applicationType: ApplicationType | null
+  applicationStatus?: ApplicationStatus
+  applicationForm?: ApplicationFormData
+  fee?: FeeRecord
   priority: Priority
   assignedTo: string
   createdAt: string

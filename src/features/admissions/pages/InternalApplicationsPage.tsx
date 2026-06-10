@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AdmissionsPageShell } from '../components/AdmissionsPageShell'
+import { AdmissionFeatureGuard } from '../components/AdmissionFeatureGuard'
 import { AdmissionsToolbar } from '../components/AdmissionsToolbar'
 import { AdmissionsFiltersPanel } from '../components/AdmissionsFilters'
 import { LeadsView } from '../components/LeadsView'
@@ -32,11 +33,9 @@ export function InternalApplicationsPage() {
           <Button variant="outline">Export</Button>
         </div>
       }
-      selectedLead={admissions.selectedLead}
-      onCloseLead={() => admissions.setSelectedLead(null)}
-      onStageChange={admissions.updateLeadStage}
-      onAddNote={admissions.addNote}
+      {...admissions.leadSheetProps}
     >
+      <AdmissionFeatureGuard feature="internalApplication">
       <div className="space-y-4">
         <AdmissionsToolbar
           search={admissions.filters.search}
@@ -66,6 +65,7 @@ export function InternalApplicationsPage() {
           emptyDescription="Internal applications submitted via the school portal will appear here."
         />
       </div>
+      </AdmissionFeatureGuard>
     </AdmissionsPageShell>
   )
 }

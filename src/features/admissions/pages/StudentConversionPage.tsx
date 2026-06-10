@@ -14,16 +14,18 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar } from '@/components/ui/avatar'
 import { AdmissionsPageShell } from '../components/AdmissionsPageShell'
+import { AdmissionFeatureGuard } from '../components/AdmissionFeatureGuard'
 import { AdmissionsEmptyState } from '../components/AdmissionsEmptyState'
 import { StageBadge } from '../components/StageBadge'
 import { useAdmissions } from '../hooks/useAdmissions'
+import { canConvertToStudent } from '../types/application'
 
 export function StudentConversionPage() {
   const admissions = useAdmissions()
   const [convertedId, setConvertedId] = useState<string | null>(null)
 
   const readyToConvert = useMemo(
-    () => admissions.leads.filter((l) => l.stage === 'accepted'),
+    () => admissions.leads.filter((l) => canConvertToStudent(l)),
     [admissions.leads],
   )
 
@@ -34,19 +36,19 @@ export function StudentConversionPage() {
 
   const handleConvert = (leadId: string) => {
     const studentId = admissions.convertToStudent(leadId)
-    setConvertedId(studentId)
-    setTimeout(() => setConvertedId(null), 4000)
+    if (studentId) {
+      setConvertedId(studentId)
+      setTimeout(() => setConvertedId(null), 4000)
+    }
   }
 
   return (
     <AdmissionsPageShell
       title="Student Conversion"
-      description="Convert accepted applicants into enrolled students"
-      selectedLead={admissions.selectedLead}
-      onCloseLead={() => admissions.setSelectedLead(null)}
-      onStageChange={admissions.updateLeadStage}
-      onAddNote={admissions.addNote}
+      description="Convert applicants to students after application submission and fee payment"
+      {...admissions.leadSheetProps}
     >
+      <AdmissionFeatureGuard feature="conversion">
       {convertedId && (
         <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm">
           <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -74,7 +76,7 @@ export function StudentConversionPage() {
             ) : readyToConvert.length === 0 ? (
               <AdmissionsEmptyState
                 title="No applicants ready"
-                description="Accepted applicants awaiting enrollment will appear here."
+                description="Applicants appear here after application is submitted and fee (full or installment) is paid."
               />
             ) : (
               <Table>
@@ -157,6 +159,7 @@ export function StudentConversionPage() {
           </CardContent>
         </Card>
       </div>
+      </AdmissionFeatureGuard>
     </AdmissionsPageShell>
   )
 }

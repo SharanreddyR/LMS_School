@@ -15,6 +15,7 @@ import {
   FileInput,
   Globe,
   UserCheck,
+  Settings2,
   ClipboardList,
 } from 'lucide-react'
 import type { NavItem } from '@/types/navigation'
@@ -43,6 +44,7 @@ export const NAVIGATION: NavItem[] = [
     roles: ['super_admin', 'school_admin', 'admission_team'],
     children: [
       { id: 'adm-overview', label: 'Overview', href: '/admissions', icon: LayoutDashboard, roles: ['super_admin', 'school_admin', 'admission_team'] },
+      { id: 'adm-setup', label: 'Setup', href: '/admissions/setup', icon: Settings2, roles: ['super_admin', 'school_admin'] },
       { id: 'adm-enquiries', label: 'Enquiries', href: '/admissions/enquiries', icon: UserPlus, roles: ['super_admin', 'school_admin', 'admission_team'] },
       { id: 'adm-pipeline', label: 'Pipeline', href: '/admissions/pipeline', icon: GitBranch, roles: ['super_admin', 'school_admin', 'admission_team'] },
       { id: 'adm-followups', label: 'Follow-ups', href: '/admissions/follow-ups', icon: CalendarClock, roles: ['super_admin', 'school_admin', 'admission_team'] },

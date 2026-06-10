@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GraduationCap, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
+import { GraduationCap, User, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { authenticate } from '@/services'
@@ -10,7 +10,7 @@ import { env } from '@/config/env'
 import { getErrorMessage } from '@/lib/api'
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -23,15 +23,15 @@ export function LoginPage() {
     e.preventDefault()
     setError(null)
 
-    const trimmedEmail = email.trim()
-    if (!trimmedEmail || !password) {
-      setError('Please enter your email and password.')
+    const trimmedUsername = username.trim()
+    if (!trimmedUsername || !password) {
+      setError('Please enter your username and password.')
       return
     }
 
     setIsLoading(true)
     try {
-      const { user } = await authenticate({ email: trimmedEmail, password })
+      const { user } = await authenticate({ username: trimmedUsername, password })
       login(user)
       navigate(DEFAULT_ROUTE_BY_ROLE[user.role], { replace: true })
     } catch (err) {
@@ -63,18 +63,18 @@ export function LoginPage() {
           )}
 
           <div className="space-y-1.5">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
+            <label htmlFor="username" className="text-sm font-medium">
+              Username
             </label>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@school.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                autoComplete="username"
+                placeholder="Enter any username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="h-11 pl-10"
                 disabled={isLoading}
               />
@@ -126,7 +126,7 @@ export function LoginPage() {
 
       {env.useMockApi && (
         <p className="mt-6 text-center text-xs text-muted-foreground/70">
-          Demo: use any account email with password <span className="font-mono text-muted-foreground">demo123</span>
+          Demo mode: any username and password work. Switch roles from the sidebar after sign in.
         </p>
       )}
     </div>

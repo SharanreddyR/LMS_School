@@ -69,6 +69,7 @@ export const routes: RouteObject[] = [
 
           // Admissions
           { path: ROUTES.ADMISSIONS.ROOT, element: withModule('admissions', <Pages.AdmissionsOverviewPage />) },
+          { path: ROUTES.ADMISSIONS.SETUP, element: withModule('admissions', <Pages.AdmissionSetupPage />) },
           { path: ROUTES.ADMISSIONS.ENQUIRIES, element: withModule('admissions', <Pages.EnquiriesPage />) },
           { path: ROUTES.ADMISSIONS.PIPELINE, element: withModule('admissions', <Pages.PipelinePage />) },
           { path: ROUTES.ADMISSIONS.FOLLOW_UPS, element: withModule('admissions', <Pages.FollowUpsPage />) },

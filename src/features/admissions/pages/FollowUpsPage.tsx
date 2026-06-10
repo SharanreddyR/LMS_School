@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { AdmissionsPageShell } from '../components/AdmissionsPageShell'
+import { AdmissionFeatureGuard } from '../components/AdmissionFeatureGuard'
 import { FollowUpCard } from '../components/FollowUpCard'
 import { AdmissionsEmptyState } from '../components/AdmissionsEmptyState'
 import { useAdmissions } from '../hooks/useAdmissions'
@@ -45,11 +46,9 @@ export function FollowUpsPage() {
           Schedule Follow-up
         </Button>
       }
-      selectedLead={admissions.selectedLead}
-      onCloseLead={() => admissions.setSelectedLead(null)}
-      onStageChange={admissions.updateLeadStage}
-      onAddNote={admissions.addNote}
+      {...admissions.leadSheetProps}
     >
+      <AdmissionFeatureGuard feature="followUps">
       <div className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Input
@@ -140,6 +139,7 @@ export function FollowUpsPage() {
           </TabsContent>
         </Tabs>
       </div>
+      </AdmissionFeatureGuard>
     </AdmissionsPageShell>
   )
 }

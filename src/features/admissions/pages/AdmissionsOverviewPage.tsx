@@ -16,23 +16,36 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StatCard } from '@/components/common/StatCard'
 import { DashboardChart } from '@/components/charts/DashboardChart'
 import { AdmissionsSubNav } from '../components/AdmissionsSubNav'
+import { AcademicYearSelector } from '../components/AcademicYearSelector'
 import { PageHeader } from '@/components/common/PageHeader'
 import { useAdmissions } from '../hooks/useAdmissions'
+import { useAdmissionSetup } from '../hooks/useAdmissionSetup'
+import { ROUTES } from '@/config/routes'
+import { ADMISSION_FEATURE_META, type AdmissionFeatureKey } from '../types/setup'
 import { getDashboardStats, MOCK_FOLLOW_UPS } from '../data/mock-data'
 import { PIPELINE_STAGES } from '../types'
 import type { StatMetric } from '@/types/common'
 
-const QUICK_LINKS = [
-  { to: '/admissions/enquiries', label: 'Enquiries', icon: UserPlus, desc: 'Manage new leads' },
-  { to: '/admissions/pipeline', label: 'Pipeline', icon: GitBranch, desc: 'Kanban view' },
-  { to: '/admissions/follow-ups', label: 'Follow-ups', icon: CalendarClock, desc: 'Due tasks' },
-  { to: '/admissions/applications/internal', label: 'Internal Apps', icon: FileInput, desc: 'In-house forms' },
-  { to: '/admissions/applications/external', label: 'External Apps', icon: Globe, desc: 'Transfer students' },
-  { to: '/admissions/conversion', label: 'Conversion', icon: UserCheck, desc: 'Enroll students' },
+const QUICK_LINKS: Array<{
+  to: string
+  label: string
+  icon: typeof UserPlus
+  desc: string
+  feature: AdmissionFeatureKey
+}> = [
+  { to: ROUTES.ADMISSIONS.ENQUIRIES, label: 'Enquiries', icon: UserPlus, desc: 'Manage new leads', feature: 'enquiry' },
+  { to: ROUTES.ADMISSIONS.PIPELINE, label: 'Pipeline', icon: GitBranch, desc: 'Kanban view', feature: 'enquiry' },
+  { to: ROUTES.ADMISSIONS.FOLLOW_UPS, label: 'Follow-ups', icon: CalendarClock, desc: 'Due tasks', feature: 'followUps' },
+  { to: ROUTES.ADMISSIONS.INTERNAL_APPS, label: 'Internal Apps', icon: FileInput, desc: 'In-house forms', feature: 'internalApplication' },
+  { to: ROUTES.ADMISSIONS.EXTERNAL_APPS, label: 'External Apps', icon: Globe, desc: 'Transfer students', feature: 'externalApplication' },
+  { to: ROUTES.ADMISSIONS.CONVERSION, label: 'Conversion', icon: UserCheck, desc: 'Enroll students', feature: 'conversion' },
 ]
 
 export function AdmissionsOverviewPage() {
   const { leads, loading } = useAdmissions()
+  const { currentYear, isYearActive, isFeatureEnabled, enabledFeatures } = useAdmissionSetup()
+
+  const visibleQuickLinks = QUICK_LINKS.filter((link) => isFeatureEnabled(link.feature))
 
   if (loading) {
     return (
@@ -67,14 +80,57 @@ export function AdmissionsOverviewPage() {
     <div className="space-y-6">
       <PageHeader
         title="Admissions Dashboard"
-        description="Overview of enquiries, pipeline, and enrollment progress"
+        description={
+          currentYear
+            ? `Overview for academic year ${currentYear.label}`
+            : 'Overview of enquiries, pipeline, and enrollment progress'
+        }
         actions={
-          <Link to="/admissions/enquiries">
-            <Button>Add Enquiry</Button>
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <AcademicYearSelector />
+            {isFeatureEnabled('enquiry') && (
+              <Link to={ROUTES.ADMISSIONS.ENQUIRIES}>
+                <Button>Add Enquiry</Button>
+              </Link>
+            )}
+          </div>
         }
       />
       <AdmissionsSubNav />
+
+      {!isYearActive && currentYear && (
+        <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+          <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+          <p>
+            Academic year <span className="font-semibold">{currentYear.label}</span> is inactive.
+            Activate it in{' '}
+            <Link to={ROUTES.ADMISSIONS.SETUP} className="font-medium text-brand-600 hover:underline">
+              Admission Setup
+            </Link>{' '}
+            to enable admission modules.
+          </p>
+        </div>
+      )}
+
+      {isYearActive && currentYear && (
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-2 py-4">
+            <span className="text-sm font-medium">Active modules:</span>
+            {enabledFeatures.length === 0 ? (
+              <span className="text-sm text-muted-foreground">No modules enabled</span>
+            ) : (
+              enabledFeatures.map((key) => (
+                <Badge key={key} variant="success">
+                  {ADMISSION_FEATURE_META[key].label}
+                </Badge>
+              ))
+            )}
+            <Link to={ROUTES.ADMISSIONS.SETUP} className="ml-auto text-sm text-brand-600 hover:underline">
+              Manage setup
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard metric={metrics[0]} icon={<UserPlus className="h-5 w-5" />} />
@@ -83,13 +139,13 @@ export function AdmissionsOverviewPage() {
         <StatCard metric={metrics[3]} icon={<TrendingUp className="h-5 w-5" />} />
       </div>
 
-      {stats.overdueFollowUps > 0 && (
+      {stats.overdueFollowUps > 0 && isFeatureEnabled('followUps') && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
           <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
           <p>
             <span className="font-semibold">{stats.overdueFollowUps} overdue follow-up(s)</span>
             {' '}need attention.{' '}
-            <Link to="/admissions/follow-ups" className="font-medium text-brand-600 hover:underline">
+            <Link to={ROUTES.ADMISSIONS.FOLLOW_UPS} className="font-medium text-brand-600 hover:underline">
               View follow-ups
             </Link>
           </p>
@@ -104,9 +160,11 @@ export function AdmissionsOverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Upcoming Follow-ups</CardTitle>
-            <Link to="/admissions/follow-ups">
-              <Button variant="ghost" size="sm">View all</Button>
-            </Link>
+            {isFeatureEnabled('followUps') && (
+              <Link to={ROUTES.ADMISSIONS.FOLLOW_UPS}>
+                <Button variant="ghost" size="sm">View all</Button>
+              </Link>
+            )}
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingFollowUps.length === 0 ? (
@@ -128,10 +186,11 @@ export function AdmissionsOverviewPage() {
         </Card>
       </div>
 
+      {visibleQuickLinks.length > 0 && (
       <div>
         <h2 className="mb-4 text-lg font-semibold">Quick Access</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {QUICK_LINKS.map(({ to, label, icon: Icon, desc }) => (
+          {visibleQuickLinks.map(({ to, label, icon: Icon, desc }) => (
             <Link
               key={to}
               to={to}
@@ -148,6 +207,7 @@ export function AdmissionsOverviewPage() {
           ))}
         </div>
       </div>
+      )}
 
       <Card>
         <CardHeader>

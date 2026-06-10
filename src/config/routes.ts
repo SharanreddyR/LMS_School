@@ -10,6 +10,7 @@ export const ROUTES = {
 
   ADMISSIONS: {
     ROOT: '/admissions',
+    SETUP: '/admissions/setup',
     ENQUIRIES: '/admissions/enquiries',
     PIPELINE: '/admissions/pipeline',
     FOLLOW_UPS: '/admissions/follow-ups',

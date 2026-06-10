@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { AdmissionsPageShell } from '../components/AdmissionsPageShell'
+import { AdmissionFeatureGuard } from '../components/AdmissionFeatureGuard'
 import { AdmissionsToolbar } from '../components/AdmissionsToolbar'
 import { AdmissionsFiltersPanel } from '../components/AdmissionsFilters'
 import { LeadsView } from '../components/LeadsView'
@@ -13,11 +14,9 @@ export function EnquiriesPage() {
       title="Enquiry Management"
       description="Capture, track, and nurture admission enquiries from all sources"
       actions={<Button onClick={() => {}}>Add Enquiry</Button>}
-      selectedLead={admissions.selectedLead}
-      onCloseLead={() => admissions.setSelectedLead(null)}
-      onStageChange={admissions.updateLeadStage}
-      onAddNote={admissions.addNote}
+      {...admissions.leadSheetProps}
     >
+      <AdmissionFeatureGuard feature="enquiry">
       <div className="space-y-4">
         <AdmissionsToolbar
           search={admissions.filters.search}
@@ -48,6 +47,7 @@ export function EnquiriesPage() {
           emptyDescription="No enquiries match your current filters. Try broadening your search or add a new enquiry."
         />
       </div>
+      </AdmissionFeatureGuard>
     </AdmissionsPageShell>
   )
 }
